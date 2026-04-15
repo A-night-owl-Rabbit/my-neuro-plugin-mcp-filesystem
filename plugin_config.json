@@ -1,0 +1,26 @@
+﻿{
+  "allowedDirectories": {
+    "title": "允许访问的目录",
+    "description": "允许 AI 访问的目录列表，多个目录用英文逗号分隔。所有文件操作都限制在这些目录内，留空则无法执行任何操作",
+    "type": "string",
+    "default": ""
+  },
+  "enableWriteOperations": {
+    "title": "启用写操作",
+    "description": "启用后 AI 可以创建/修改/移动文件和目录，关闭则只能读取。建议谨慎开启",
+    "type": "bool",
+    "default": false
+  },
+  "maxFileSizeKB": {
+    "title": "最大读取文件大小（KB）",
+    "description": "读取文件时的大小上限，超过此大小的文件将被拒绝读取，避免 token 爆炸。默认 512KB",
+    "type": "int",
+    "default": 512
+  },
+  "excludePatterns": {
+    "title": "全局排除模式",
+    "description": "搜索和目录树中默认排除的模式，多个模式用英文逗号分隔，如 node_modules,.git,*.exe",
+    "type": "string",
+    "default": "node_modules,.git,.svn,__pycache__"
+  }
+}
