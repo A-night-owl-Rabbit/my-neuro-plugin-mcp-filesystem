@@ -1,0 +1,7 @@
+﻿# 本地覆盖配置（勿提交到 Git）
+plugin_config.local.json
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
