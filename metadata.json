@@ -1,0 +1,9 @@
+{
+  "name": "mcp-filesystem",
+  "displayName": "文件系统工具",
+  "version": "1.0.0",
+  "author": "community",
+  "description": "让 AI 助手可以读写文件、编辑文件、浏览目录、搜索文件等文件系统操作，基于 MCP Filesystem Server 改造",
+  "main": "index.js",
+  "lang": "js"
+}
