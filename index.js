@@ -19,6 +19,13 @@ const DEFAULT_CONFIG = {
     excludePatterns: 'node_modules,.git,.svn,__pycache__'
 };
 
+/** 与 plugin-context 一致：去掉 UTF-8 BOM，避免 JSON.parse 失败 */
+function parsePluginConfigJsonFileSync(filePath) {
+    let text = fsSync.readFileSync(filePath, 'utf-8');
+    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+    return JSON.parse(text.trim());
+}
+
 // ===== 工具定义（OpenAI function calling 格式）=====
 
 const READ_TOOLS = [
@@ -297,7 +304,7 @@ class McpFilesystemPlugin extends Plugin {
         const cfgPath = path.join(this.context._pluginDir || '', 'plugin_config.json');
         if (!fsSync.existsSync(cfgPath)) return;
         try {
-            const raw = JSON.parse(fsSync.readFileSync(cfgPath, 'utf-8'));
+            const raw = parsePluginConfigJsonFileSync(cfgPath);
             for (const [key, val] of Object.entries(this._config)) {
                 if (raw[key] && typeof raw[key] === 'object' && 'type' in raw[key]) {
                     raw[key].value = val;
