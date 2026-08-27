@@ -602,6 +602,20 @@ class McpFilesystemPlugin extends Plugin {
         });
     }
 
+    async _findNearestExistingAncestor(absolutePath) {
+        let candidate = absolutePath;
+        while (true) {
+            try {
+                return await fs.realpath(candidate);
+            } catch (err) {
+                if (err.code !== 'ENOENT') throw err;
+                const parent = path.dirname(candidate);
+                if (parent === candidate) throw err;
+                candidate = parent;
+            }
+        }
+    }
+
     async _validatePath(requestedPath) {
         const expanded = this._expandHome(requestedPath);
         let absolute;
@@ -628,17 +642,12 @@ class McpFilesystemPlugin extends Plugin {
             return realPath;
         } catch (err) {
             if (err.code === 'ENOENT') {
-                const parentDir = path.dirname(absolute);
-                try {
-                    const realParent = await fs.realpath(parentDir);
-                    const normalizedParent = this._normalizePath(realParent);
-                    if (!this._isPathAllowed(normalizedParent)) {
-                        throw new Error(`访问被拒绝 - 父目录不在允许的目录范围内: ${realParent}`);
-                    }
-                    return absolute;
-                } catch {
-                    throw new Error(`父目录不存在: ${parentDir}`);
+                const realAncestor = await this._findNearestExistingAncestor(path.dirname(absolute));
+                const normalizedAncestor = this._normalizePath(realAncestor);
+                if (!this._isPathAllowed(normalizedAncestor)) {
+                    throw new Error(`访问被拒绝 - 已存在的上级目录不在允许范围内: ${realAncestor}`);
                 }
+                return absolute;
             }
             throw err;
         }
@@ -647,7 +656,9 @@ class McpFilesystemPlugin extends Plugin {
     // ===== 文件操作（移植自 lib.ts）=====
 
     async _checkFileSize(filePath) {
-        const maxBytes = (this._config.maxFileSizeKB || 512) * 1024;
+        const rawKB = Number(this._config.maxFileSizeKB);
+        const maxKB = Number.isFinite(rawKB) && rawKB > 0 ? rawKB : 512;
+        const maxBytes = maxKB * 1024;
         const stats = await fs.stat(filePath);
         if (stats.size > maxBytes) {
             throw new Error(`文件过大 (${this._formatSize(stats.size)})，超过限制 (${this._formatSize(maxBytes)})。可在插件配置中调整 maxFileSizeKB`);
